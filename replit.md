@@ -3,7 +3,7 @@
 ## Project Overview
 SportOase is a complete IServ module for booking sports facilities (e.g., gym halls) within schools. Built with Django backend and Angular frontend, it integrates seamlessly into IServ's platform using native authentication and permissions.
 
-**Status**: Development complete, CSRF security verified, ready for deployment testing
+**Status**: IServ-only architecture complete, all security verified, ready for deployment testing
 
 ## Architecture
 
@@ -17,9 +17,9 @@ SportOase is a complete IServ module for booking sports facilities (e.g., gym ha
 
 ### Frontend (Angular)
 - **Framework**: Angular 17
-- **Routing**: Six main views (Dashboard, Week Overview, Slots, Bookings, My Bookings, Admin)
+- **Routing**: Five main views (Dashboard with Week Overview, Slots, Bookings, My Bookings, Admin)
 - **Security**: CSRF tokens with withCredentials for all API calls
-- **Development**: Test login system (testuser/test123) for local development
+- **Authentication**: IServ-only (no separate login system)
 
 ### Models
 1. **TimeSlot** - Defines available booking periods (day + period number)
@@ -29,35 +29,57 @@ SportOase is a complete IServ module for booking sports facilities (e.g., gym ha
 
 ## Recent Changes (November 20, 2025)
 
-### Week Overview Feature Added (Latest)
-**Status**: Fully functional week overview component
+### IServ-First Architecture Update (Latest)
+**Status**: Fully restructured for IServ-only authentication
 
-**New Features**:
-1. **Week Overview Component** - Calendar-style view showing all slots for the week
-   - Grid layout displaying Monday through Friday
-   - Each day shows all 6 periods with availability status
+**Major Changes**:
+1. **Removed Separate Login System**
+   - Deleted login component - authentication is exclusively through IServ
+   - Frontend has no login UI - app starts directly on dashboard
+   - Development API endpoints remain for testing purposes (not accessible via UI)
+
+2. **Dashboard with Integrated Week Overview**
+   - Dashboard is now the home page showing weekly overview directly
+   - Full calendar-style grid displaying Monday through Friday
+   - Each day shows all 6 periods with current status
    - Color-coded slots: Green (available), Yellow (almost full), Red (blocked)
    - Progress bars showing booking capacity
-   - Navigation buttons: Previous Week, Current Week, Next Week
-   - Click slots to navigate directly to booking form
+   - Navigation: Previous Week, Current Week, Next Week buttons
+   - Click any slot to navigate directly to booking form
+   - Quick access buttons to "Meine Buchungen" and "Admin"
 
-2. **API Endpoint** - `GET /api/sportoase/slots/week?start_date=YYYY-MM-DD`
-   - Returns structured week data with all slots and their booking status
-   - Automatically defaults to current week if no start_date provided
+3. **Admin Course Name Management**
+   - Admins can now rename TimeSlot labels (course names)
+   - New admin panel section: "Kursnamen verwalten"
+   - Inline editing of course names with save/cancel
+   - Backend API: `PUT /api/sportoase/timeslots/<id>` to update labels
+   - Admin-only permission check (sportoase.admin required)
+   - CSRF protection enabled for security
 
-3. **Development Login System**
-   - Added login component for local testing
-   - Test user credentials: `testuser` / `test123`
-   - Login endpoints: `/api/sportoase/login`, `/api/sportoase/logout`, `/api/sportoase/check-auth`
-   - User has both `sportoase.user` and `sportoase.admin` permissions for testing
+4. **API Endpoints**:
+   - `GET /api/sportoase/slots/week?start_date=YYYY-MM-DD` - Week overview data
+   - `GET /api/sportoase/timeslots` - Get all configured timeslots
+   - `PUT /api/sportoase/timeslots/<id>` - Update timeslot label (admin only)
 
-**Files Added/Modified**:
-- `frontend/src/app/components/week-overview/week-overview.component.ts` - New week overview component
-- `frontend/src/app/components/login/login.component.ts` - New login component
-- `backend/views/auth.py` - Authentication endpoints for development
-- `backend/views/slots.py` - Week overview endpoint
-- `frontend/src/app/services/api.service.ts` - Added getWeekOverview method
-- `backend/urls.py` - Added login/logout/check-auth routes
+**IServ Authentication**:
+- Authentication handled exclusively by IServAuthMiddleware
+- Reads user info from IServ headers (X-IServ-User, X-IServ-Email, etc.)
+- Auto-creates/updates Django user objects
+- Syncs IServ groups to permissions:
+  - `lehrer`/`teachers` → `sportoase.user`
+  - `admin`/`administrators` → `sportoase.admin`
+- Enabled via environment variable: `ISERV_AUTH_ENABLED=True`
+
+**Files Modified**:
+- `frontend/src/app/components/dashboard/dashboard.component.ts` - Integrated week overview
+- `frontend/src/app/components/admin-panel/admin-panel.component.ts` - Added course management
+- `frontend/src/app/app.module.ts` - Removed login, updated routing to dashboard
+- `backend/views/slots.py` - Added update_timeslot_label endpoint
+- `backend/urls.py` - Added timeslot update route
+- `frontend/src/app/services/api.service.ts` - Added updateTimeslotLabel method
+
+**Files Removed**:
+- `frontend/src/app/components/login/` - Login component deleted
 
 ### IServ Production Deployment Configuration
 **Status**: Ready for live IServ deployment

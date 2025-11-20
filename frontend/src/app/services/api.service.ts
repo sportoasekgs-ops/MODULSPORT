@@ -50,6 +50,13 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/timeslots`, { withCredentials: true });
   }
 
+  updateTimeslotLabel(timeslotId: number, label: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/timeslots/${timeslotId}`, { label }, { 
+      headers: this.getHeaders(),
+      withCredentials: true
+    });
+  }
+
   createBooking(bookingData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/book`, bookingData, { 
       headers: this.getHeaders(),

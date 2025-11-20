@@ -7,7 +7,57 @@ import { ApiService } from '../../services/api.service';
   template: `
     <div class="card">
       <h2>Admin-Panel</h2>
-      <p class="text-muted">Slots blockieren und Benachrichtigungen verwalten</p>
+      <p class="text-muted">Kurse verwalten, Slots blockieren und Benachrichtigungen verwalten</p>
+      
+      <h4 class="mt-4">Kursnamen verwalten</h4>
+      <div *ngIf="loadingTimeslots" class="text-center">
+        <div class="spinner-border" role="status"></div>
+      </div>
+      
+      <div *ngIf="!loadingTimeslots && timeslots.length > 0">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Wochentag</th>
+              <th>Stunde</th>
+              <th>Kursname</th>
+              <th>Aktionen</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let slot of timeslots">
+              <td>{{ getWeekdayName(slot.weekday) }}</td>
+              <td>{{ slot.period }}. Stunde ({{ slot.start_time }} - {{ slot.end_time }})</td>
+              <td>
+                <span *ngIf="!slot.editing">{{ slot.label }}</span>
+                <input *ngIf="slot.editing" 
+                       type="text" 
+                       class="form-control" 
+                       [(ngModel)]="slot.newLabel" 
+                       (keyup.enter)="saveTimeslotLabel(slot)"
+                       (keyup.escape)="cancelEdit(slot)">
+              </td>
+              <td>
+                <button *ngIf="!slot.editing" 
+                        class="btn btn-sm btn-primary me-2" 
+                        (click)="editTimeslot(slot)">
+                  Bearbeiten
+                </button>
+                <button *ngIf="slot.editing" 
+                        class="btn btn-sm btn-success me-2" 
+                        (click)="saveTimeslotLabel(slot)">
+                  Speichern
+                </button>
+                <button *ngIf="slot.editing" 
+                        class="btn btn-sm btn-secondary" 
+                        (click)="cancelEdit(slot)">
+                  Abbrechen
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       
       <h4 class="mt-4">Slot blockieren</h4>
       <form [formGroup]="blockForm" (ngSubmit)="blockSlot()">
@@ -83,7 +133,9 @@ import { ApiService } from '../../services/api.service';
 export class AdminPanelComponent implements OnInit {
   blockForm: FormGroup;
   blockedSlots: any[] = [];
+  timeslots: any[] = [];
   loadingBlocked: boolean = false;
+  loadingTimeslots: boolean = false;
   successMessage: string = '';
   errorMessage: string = '';
 
@@ -100,6 +152,70 @@ export class AdminPanelComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadBlockedSlots();
+    this.loadTimeslots();
+  }
+
+  loadTimeslots(): void {
+    this.loadingTimeslots = true;
+    this.apiService.getTimeslots().subscribe({
+      next: (response) => {
+        this.timeslots = response.timeslots.map((ts: any) => ({
+          ...ts,
+          editing: false,
+          newLabel: ts.label
+        }));
+        this.loadingTimeslots = false;
+      },
+      error: (error) => {
+        console.error('Error loading timeslots:', error);
+        this.loadingTimeslots = false;
+      }
+    });
+  }
+
+  editTimeslot(slot: any): void {
+    this.timeslots.forEach(s => s.editing = false);
+    slot.editing = true;
+    slot.newLabel = slot.label;
+  }
+
+  cancelEdit(slot: any): void {
+    slot.editing = false;
+    slot.newLabel = slot.label;
+  }
+
+  saveTimeslotLabel(slot: any): void {
+    if (!slot.newLabel || slot.newLabel.trim() === '') {
+      this.errorMessage = 'Kursname darf nicht leer sein';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    this.apiService.updateTimeslotLabel(slot.id, slot.newLabel).subscribe({
+      next: (response) => {
+        slot.label = slot.newLabel;
+        slot.editing = false;
+        this.successMessage = 'Kursname erfolgreich aktualisiert';
+        setTimeout(() => this.successMessage = '', 3000);
+      },
+      error: (error) => {
+        this.errorMessage = error.error?.error || 'Fehler beim Aktualisieren des Kursnamens';
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
+  }
+
+  getWeekdayName(weekday: string): string {
+    const days: { [key: string]: string } = {
+      'Mon': 'Montag',
+      'Tue': 'Dienstag',
+      'Wed': 'Mittwoch',
+      'Thu': 'Donnerstag',
+      'Fri': 'Freitag',
+      'Sat': 'Samstag',
+      'Sun': 'Sonntag'
+    };
+    return days[weekday] || weekday;
   }
 
   loadBlockedSlots(): void {

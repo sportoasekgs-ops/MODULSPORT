@@ -12,6 +12,7 @@ urlpatterns = [
     path('slots', slots.get_available_slots, name='get_slots'),
     path('slots/week', slots.get_week_overview, name='get_week'),
     path('timeslots', slots.get_timeslots, name='get_timeslots'),
+    path('timeslots/<int:timeslot_id>', slots.update_timeslot_label, name='update_timeslot'),
     
     path('book', bookings.create_booking, name='create_booking'),
     path('my-bookings', bookings.get_my_bookings, name='my_bookings'),

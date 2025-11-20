@@ -90,3 +90,41 @@ def get_timeslots(request):
             'max_students': ts.max_students,
         } for ts in timeslots]
     })
+
+
+@require_http_methods(["PUT"])
+def update_timeslot_label(request, timeslot_id):
+    """PUT /api/sportoase/timeslots/<id> - Aktualisiert das Label eines TimeSlots (nur Admin)"""
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden("Authentifizierung erforderlich")
+    
+    if not request.user.has_perm("sportoase.admin"):
+        return HttpResponseForbidden("Admin-Berechtigung erforderlich")
+    
+    try:
+        data = json.loads(request.body)
+        label = data.get('label')
+        
+        if not label:
+            return JsonResponse({'error': 'Label erforderlich'}, status=400)
+        
+        timeslot = TimeSlot.objects.get(id=timeslot_id)
+        timeslot.label = label
+        timeslot.save()
+        
+        return JsonResponse({
+            'success': True,
+            'timeslot': {
+                'id': timeslot.id,
+                'weekday': timeslot.weekday,
+                'period': timeslot.period,
+                'label': timeslot.label,
+                'start_time': timeslot.start_time.strftime('%H:%M'),
+                'end_time': timeslot.end_time.strftime('%H:%M'),
+                'max_students': timeslot.max_students,
+            }
+        })
+    except TimeSlot.DoesNotExist:
+        return JsonResponse({'error': 'TimeSlot nicht gefunden'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
