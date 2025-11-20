@@ -1,0 +1,52 @@
+{
+  "id": "sportoase",
+  "name": "SportOase",
+  "version": "1.0.0",
+  "description": "Buchungssystem für Sportstunden - IServ Modul",
+  "author": "SportOase Team",
+  "permissions": {
+    "sportoase.user": {
+      "name": "SportOase Benutzer",
+      "description": "Kann Slots buchen und eigene Buchungen verwalten"
+    },
+    "sportoase.admin": {
+      "name": "SportOase Administrator",
+      "description": "Kann Slots blockieren, alle Buchungen sehen und Einstellungen verwalten"
+    }
+  },
+  "menu": {
+    "tools": [
+      {
+        "name": "SportOase",
+        "url": "/sportoase",
+        "icon": "sports",
+        "permission": "sportoase.user"
+      }
+    ]
+  },
+  "backend": {
+    "type": "django",
+    "entry_point": "backend.wsgi:application",
+    "urls": "/api/sportoase/",
+    "database": "iserv_internal"
+  },
+  "frontend": {
+    "type": "angular",
+    "build_dir": "frontend/dist/sportoase-frontend",
+    "base_path": "/sportoase"
+  },
+  "dependencies": {
+    "python": ">=3.10",
+    "django": ">=4.2",
+    "node": ">=18"
+  },
+  "installation": {
+    "steps": [
+      "Install Python dependencies: pip install -r requirements.txt",
+      "Install Node dependencies: cd frontend && npm install",
+      "Run migrations: python backend/manage.py migrate",
+      "Create superuser: python backend/manage.py createsuperuser",
+      "Assign permissions to users via IServ Admin Panel"
+    ]
+  }
+}
