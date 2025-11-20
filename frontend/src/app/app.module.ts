@@ -10,12 +10,16 @@ import { SlotsComponent } from './components/slots/slots.component';
 import { BookingFormComponent } from './components/booking-form/booking-form.component';
 import { MyBookingsComponent } from './components/my-bookings/my-bookings.component';
 import { AdminPanelComponent } from './components/admin-panel/admin-panel.component';
+import { WeekOverviewComponent } from './components/week-overview/week-overview.component';
+import { LoginComponent } from './components/login/login.component';
 
 import { ApiService } from './services/api.service';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent },
   { path: 'dashboard', component: DashboardComponent },
+  { path: 'week-overview', component: WeekOverviewComponent },
   { path: 'slots', component: SlotsComponent },
   { path: 'book/:date/:period', component: BookingFormComponent },
   { path: 'my-bookings', component: MyBookingsComponent },
@@ -26,10 +30,12 @@ const routes: Routes = [
   declarations: [
     AppComponent,
     DashboardComponent,
+    WeekOverviewComponent,
     SlotsComponent,
     BookingFormComponent,
     MyBookingsComponent,
     AdminPanelComponent,
+    LoginComponent,
   ],
   imports: [
     BrowserModule,

@@ -1,10 +1,13 @@
 from django.urls import path
-from backend.views import slots, bookings, admin, csrf
+from backend.views import slots, bookings, admin, csrf, auth
 
 app_name = 'sportoase'
 
 urlpatterns = [
     path('csrf', csrf.get_csrf_token, name='csrf_token'),
+    path('login', auth.login_view, name='login'),
+    path('logout', auth.logout_view, name='logout'),
+    path('check-auth', auth.check_auth, name='check_auth'),
     
     path('slots', slots.get_available_slots, name='get_slots'),
     path('slots/week', slots.get_week_overview, name='get_week'),

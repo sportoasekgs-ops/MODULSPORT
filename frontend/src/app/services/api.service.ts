@@ -38,6 +38,14 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/slots?date=${date}`, { withCredentials: true });
   }
 
+  getWeekOverview(startDate?: string): Observable<any> {
+    let url = `${this.apiUrl}/slots/week`;
+    if (startDate) {
+      url += `?start_date=${startDate}`;
+    }
+    return this.http.get(url, { withCredentials: true });
+  }
+
   getTimeslots(): Observable<any> {
     return this.http.get(`${this.apiUrl}/timeslots`, { withCredentials: true });
   }

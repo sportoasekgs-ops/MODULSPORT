@@ -15,6 +15,9 @@ import { Component } from '@angular/core';
               <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
             </li>
             <li class="nav-item">
+              <a class="nav-link" routerLink="/week-overview" routerLinkActive="active">Wochenübersicht</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" routerLink="/slots" routerLinkActive="active">Slots anzeigen</a>
             </li>
             <li class="nav-item">
